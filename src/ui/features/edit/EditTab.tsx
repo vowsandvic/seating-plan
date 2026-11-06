@@ -49,7 +49,7 @@ export function EditTab() {
 
   return (
     <div className="panel">
-      <h2><span className="n">01</span>{t('panelAddObjectTitle')}</h2>
+      <h2>{t('panelAddObjectTitle')}</h2>
       <div className="hint">{t('panelAddObjectHint')}</div>
       <ObjectPicker onAdd={(type) => handleAdd(type)} />
       <div className="zoom-toolbar">

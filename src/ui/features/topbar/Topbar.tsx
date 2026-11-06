@@ -128,7 +128,6 @@ export function Topbar() {
       <div className="brand">
         <div className="brand-mark"><BrandIcon size={20} /></div>
         <div>
-          <div className="eyebrow">{t('eyebrow')}</div>
           <h1>{t('appTitle')}</h1>
         </div>
       </div>
@@ -167,7 +166,7 @@ export function Topbar() {
                       }}
                     >
                       <span className="rname">{g.name}</span>
-                      <span className="rtable">{g.table} · {t('seatInline', g.seat)}</span>
+                      <span className="rtable"><b>{g.table}</b> {t('seatInline', g.seat)}</span>
                     </div>
                   ))}
                 </div>

@@ -2,6 +2,10 @@ export type Lang = 'th' | 'en';
 
 export interface Dictionary {
   eyebrow: string;
+  previewHeroTitle: string;
+  previewHeroDesc: string;
+  previewChipsLabel: string;
+  previewBackBtn: string;
   appTitle: string;
   tabEdit: string;
   tabGuests: string;

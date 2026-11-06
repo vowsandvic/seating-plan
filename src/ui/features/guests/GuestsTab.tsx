@@ -116,7 +116,7 @@ function TableOverview({ tables }: { tables: ReturnType<typeof floorplanTables> 
         const count = counts[tb.key] || 0;
         const status = tableStatus(count, tb.capacity);
         const isNoCap = status === 'nocap';
-        const title = isNoCap ? `${t('noCapTitle')} · ${t('clearFilterHint')}` : t('clearFilterHint');
+        const title = isNoCap ? `${t('noCapTitle')}\n${t('clearFilterHint')}` : t('clearFilterHint');
         return (
           <button key={tb.key} className={`table-chip ${status}${state.guestTableFilter === tb.key ? ' active' : ''}`} title={title} onClick={() => toggle(tb.key)}>
             <span className={`tc-dot ${status}`}><TableStatusIcon status={status} /></span>

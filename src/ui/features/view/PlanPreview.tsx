@@ -4,6 +4,13 @@ import { CANVAS_H, CANVAS_W, normTable, seatCanvasPoint, seatIndexFor, seatPosit
 /** Gap kept between the focused table and the guest panel / viewport edge. */
 const FOCUS_PAD = 40;
 
+/** Same rule as the guest page: leave labels that already say "Table"/"โต๊ะ" alone. */
+function tableLabel(label: string, prefix: string): string {
+  const s = String(label || '').trim();
+  const lower = s.toLowerCase();
+  return lower.startsWith('โต๊ะ') || lower.startsWith('table') ? s : `${prefix} ${s}`;
+}
+
 /** The searched-for guest's table and seat; survives until the view is reset. */
 interface Pin { tableId: string; seatIndex: number | null; name: string | null; seat: string | null }
 import { seatRosterForTable, type Guest } from '../../../domain/guest';
@@ -116,19 +123,19 @@ export function PlanPreview({
 
   return (
     <div className="display-preview">
-      <div className="display-bg-glow" />
-      <div className="display-sparkles" aria-hidden="true" />
       <section className="display-hero">
         {logo && <img className="display-hero-logo" src={logo} alt="" />}
-        <div className="display-hero-eyebrow">{t('eyebrow')}</div>
-        <h2>{t('appTitle')}</h2>
-        <div className="display-flourish"><span /><b>◆</b><span /></div>
-        <p>{t('panelFloorplanHint')}</p>
+        <h2>{t('previewHeroTitle')}</h2>
+        <p>{t('previewHeroDesc')}</p>
       </section>
 
       <section className="display-search-card">
         <div className="display-search-wrap">
-          <span className="display-search-icon">⌕</span>
+          <span className="display-search-icon" aria-hidden="true">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
+              <circle cx="8.5" cy="8.5" r="5.75" /><path d="M13 13l4.5 4.5" />
+            </svg>
+          </span>
           <input type="text" placeholder={t('searchPlaceholder')} value={query} onChange={(event) => setQuery(event.target.value)} />
         </div>
         <div className="display-search-results">
@@ -136,14 +143,14 @@ export function PlanPreview({
           {matches.map((guest, index) => {
             const obj = floorplan.find((item) => item.label.trim().toLowerCase() === guest.table.trim().toLowerCase());
             return <button key={index} type="button" className="display-result-row" onClick={() => obj && focusTable(obj, guest.name)}>
-              <span>{guest.name}</span><strong>{guest.table} · {t('seatInline', guest.seat)}</strong>
+              <span>{guest.name}</span><strong><b>{tableLabel(guest.table, t('tableWordPrefix'))}</b>{t('seatInline', guest.seat)}</strong>
             </button>;
           })}
         </div>
       </section>
 
       {tables.length > 0 && <div className="display-chips-row">
-        <div className="display-chips-label">{t('panelFloorplanTitle')}</div>
+        <div className="display-chips-label">{t('previewChipsLabel')}</div>
         {tables.map((obj) => <button key={obj.id} type="button" onClick={() => focusTable(obj, null)}>{obj.label}</button>)}
       </div>}
 
@@ -191,7 +198,7 @@ export function PlanPreview({
                   </span>
                 ))}
                 <span className="preview-table-label">{obj.label}</span>
-                {isTable && <span className="preview-table-sub">{t('seatsCount', obj.capacity || 0)} · {guestCount(obj)}</span>}
+                {isTable && <span className="preview-table-sub">{t('capacityFraction', guestCount(obj), obj.capacity || 0)}</span>}
               </button>
             );
           })}
@@ -208,7 +215,11 @@ export function PlanPreview({
         <div key={ringKey} className={`preview-focus-ring${ringKey > 0 ? ' play' : ''}`} />
         <div className="preview-zoom-controls">
           <button type="button" title={t('zoomInTitle')} onClick={zoomIn}>+</button>
-          <button type="button" className="home" title={t('zoomFitTitle')} onClick={resetView}>⤢</button>
+          <button type="button" className="home" title={t('zoomFitTitle')} onClick={resetView} aria-label={t('zoomFitTitle')}>
+            <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M2 6V2h4M14 6V2h-4M2 10v4h4M14 10v4h-4" />
+            </svg>
+          </button>
           <button type="button" title={t('zoomOutTitle')} onClick={zoomOut}>−</button>
         </div>
         <div className="preview-hint-tag" style={{ opacity: hintVisible ? 1 : 0 }}>{t('zoomHint')}</div>
@@ -216,8 +227,7 @@ export function PlanPreview({
         <aside ref={panelRef} className={`display-guest-panel${panelObj ? ' open' : ''}`}>
           <div className="display-guest-head">
             <button type="button" onClick={resetView} aria-label={t('modalCloseLabel')}>×</button>
-            <small>{t('tableWordPrefix')}</small>
-            <h3>{panelObj?.label ?? '—'}</h3>
+            <h3>{panelObj ? tableLabel(panelObj.label, t('tableWordPrefix')) : ''}</h3>
             <span>{panelObj?.capacity ? t('capacityFraction', filled, panelObj.capacity) : t('seatsCount', filled)}</span>
           </div>
           <div className="display-guest-body" ref={panelBodyRef}>
@@ -230,7 +240,7 @@ export function PlanPreview({
               })}
             </ul>}
           </div>
-          <div className="display-guest-foot"><button type="button" onClick={resetView}>{t('tabPreview')}</button></div>
+          <div className="display-guest-foot"><button type="button" onClick={resetView}>{t('previewBackBtn')}</button></div>
         </aside>
       </div>
     </div>
