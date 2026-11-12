@@ -4,12 +4,15 @@
 import { CAP_MIN, DEFAULTS, DIM_MIN, DIM_MAX, capMax, clampNum, type FloorplanObject, type ObjectType } from './floorplan';
 import type { Guest } from './guest';
 import { isHexColor, type CustomThemeColors } from './theme';
+import { finalizeEventPath, isValidEventPath } from './eventPath';
 
 export type ExportedTheme = string | { id: 'custom'; colors: [string, string, string, string] } | null;
 
 export interface SeatingDataFile {
   version: 2;
   exportedAt: string;
+  /** URL segment seating-display is deployed under; null = site root. */
+  path: string | null;
   theme: ExportedTheme;
   lang: 'th' | 'en';
   logo: string | null;
@@ -23,10 +26,13 @@ export function buildExportData(input: {
   theme: ExportedTheme;
   lang: 'th' | 'en';
   logo: string | null;
+  eventPath?: string;
 }): SeatingDataFile {
+  const path = finalizeEventPath(input.eventPath ?? '');
   return {
     version: 2,
     exportedAt: new Date().toISOString(),
+    path: path && isValidEventPath(path) ? path : null,
     theme: input.theme,
     lang: input.lang,
     logo: input.logo,
@@ -40,6 +46,7 @@ export interface ParsedImport {
   guestsRaw: unknown[] | null;
   theme: ExportedTheme | undefined; // undefined = key absent entirely
   logo: string | null | undefined;
+  eventPath: string | undefined; // undefined = key absent entirely
 }
 
 export type ImportParseError = 'badJson' | 'noData' | 'badFloorplan' | 'badGuest';
@@ -83,6 +90,9 @@ export function parseImportJson(raw: string): ParsedImport | { error: ImportPars
     theme: !isBareArray && obj && 'theme' in obj ? (obj.theme as ExportedTheme) : undefined,
     logo: !isBareArray && obj && 'logo' in obj
       ? (typeof obj.logo === 'string' && /^data:image\//.test(obj.logo) ? obj.logo : null)
+      : undefined,
+    eventPath: !isBareArray && obj && 'path' in obj
+      ? (typeof obj.path === 'string' ? finalizeEventPath(obj.path) : '')
       : undefined,
   };
 }

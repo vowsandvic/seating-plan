@@ -7,9 +7,10 @@ import type { Mode } from '../../../state/planState';
 import { buildExportData, normalizeImportedFloorplan, normalizeImportedGuests, parseImportJson, resolveImportedTheme, type ExportedTheme } from '../../../domain/jsonSchema';
 import {
   BrandIcon, EditIcon, GuestsIcon, SearchIcon, UndoIcon, RedoIcon,
-  HelpIcon, PaletteIcon, DownloadIcon, UploadIcon, TrashIcon,
+  HelpIcon, PaletteIcon, DownloadIcon, UploadIcon, TrashIcon, QrIcon,
 } from '../../components/Icons';
 import { ThemeModal, themeButtonDotColor } from './ThemeModal';
+import { ShareModal } from '../share/ShareModal';
 
 const TABS: Array<{ mode: Mode; labelKey: 'tabEdit' | 'tabGuests' | 'tabPreview' }> = [
   { mode: 'edit', labelKey: 'tabEdit' },
@@ -27,6 +28,7 @@ export function Topbar() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [showTheme, setShowTheme] = useState(false);
+  const [showShare, setShowShare] = useState(false);
   const searchWrapRef = useRef<HTMLDivElement | null>(null);
 
   const canUndoRedo = state.mode === 'edit' || state.mode === 'guests';
@@ -63,7 +65,7 @@ export function Topbar() {
     const themeOut: ExportedTheme = state.theme === 'custom'
       ? { id: 'custom', colors: [state.customColors.c60, state.customColors.c25, state.customColors.c10, state.customColors.c5] }
       : state.theme;
-    const data = buildExportData({ floorplan: state.floorplan, guests: state.guests, theme: themeOut, lang, logo: state.logo });
+    const data = buildExportData({ floorplan: state.floorplan, guests: state.guests, theme: themeOut, lang, logo: state.logo, eventPath: state.eventPath });
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -95,6 +97,7 @@ export function Topbar() {
         floorplan: parsed.floorplanRaw ? normalizeImportedFloorplan(parsed.floorplanRaw) : undefined,
         guests: parsed.guestsRaw ? normalizeImportedGuests(parsed.guestsRaw) : undefined,
         logo: parsed.logo,
+        eventPath: parsed.eventPath,
       });
       if (parsed.theme !== undefined) {
         const resolved = resolveImportedTheme(parsed.theme);
@@ -181,6 +184,7 @@ export function Topbar() {
             <PaletteIcon size={15} />{t('themeBtn')}
             {themeDot && <span className="theme-btn-dot" style={{ background: themeDot }} />}
           </button>
+          <button className="chip" title={t('shareBtnTitle')} onClick={() => setShowShare(true)}><QrIcon size={15} />{t('shareBtn')}</button>
           <button className="chip" title={t('exportBtnTitle')} onClick={handleExport}><DownloadIcon size={15} />{t('exportBtn')}</button>
           <button className="chip" title={t('importBtnTitle')} onClick={() => importInputRef.current?.click()}><UploadIcon size={15} />{t('importBtn')}</button>
           <input
@@ -202,6 +206,7 @@ export function Topbar() {
         </div>
       </div>
       {showTheme && <ThemeModal onClose={() => setShowTheme(false)} />}
+      {showShare && <ShareModal onClose={() => setShowShare(false)} />}
     </div>
   );
 }

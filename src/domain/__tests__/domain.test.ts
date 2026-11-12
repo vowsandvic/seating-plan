@@ -5,6 +5,9 @@ import { THEMES, computePlanThemeTokens, themeLuminance, isHexColor } from '../t
 import { parseCSV, buildGuestTemplateCsv } from '../csv';
 import { normalizeImportedFloorplan, parseImportJson, resolveImportedTheme } from '../jsonSchema';
 import { DICTIONARIES } from '../i18n';
+import { buildExportData } from '../jsonSchema';
+import { finalizeEventPath, isValidEventPath, normalizeEventPathInput, displayUrlFor, DISPLAY_SITE_URL } from '../eventPath';
+import { qrMatrix } from '../qr';
 
 describe('constants', () => {
   it('matches the original canvas size', () => {
@@ -216,5 +219,43 @@ describe('seat focus helpers', () => {
     const turned = seatCanvasPoint({ ...base, rot: 90 }, 0)!;
     expect(turned.x).toBeCloseTo(50 + r, 5);
     expect(turned.y).toBeCloseTo(50, 5);
+  });
+});
+
+describe('event path', () => {
+
+  it('coerces typing into a URL-safe segment', () => {
+    expect(normalizeEventPathInput('Somchai & Nida 2026')).toBe('somchai-nida-2026');
+    expect(normalizeEventPathInput('a__b--c')).toBe('a-b-c');
+    expect(finalizeEventPath('-งาน-261031-')).toBe('261031');
+  });
+  it('validates the same rules the deploy workflow enforces', () => {
+    expect(isValidEventPath('somchai-nida-261031')).toBe(true);
+    expect(isValidEventPath('a')).toBe(true);
+    expect(isValidEventPath('')).toBe(false);
+    expect(isValidEventPath('-a')).toBe(false);
+    expect(isValidEventPath('A')).toBe(false);
+    expect(isValidEventPath('a/b')).toBe(false);
+    expect(isValidEventPath('x'.repeat(65))).toBe(false);
+  });
+  it('builds the guest URL', () => {
+    expect(displayUrlFor('abc')).toBe(`${DISPLAY_SITE_URL}abc/`);
+    expect(displayUrlFor('')).toBe(DISPLAY_SITE_URL);
+  });
+  it('exports the path, or null when unset', () => {
+    const base = { floorplan: [], guests: [], theme: null, lang: 'th' as const, logo: null };
+    expect(buildExportData({ ...base, eventPath: 'my-event' }).path).toBe('my-event');
+    expect(buildExportData(base).path).toBeNull();
+  });
+  it('reads the path back on import', () => {
+    const r = parseImportJson(JSON.stringify({ floorplan: [], path: 'my-event' }));
+    expect('error' in r ? null : r.eventPath).toBe('my-event');
+    const r2 = parseImportJson(JSON.stringify({ floorplan: [] }));
+    expect('error' in r2 ? null : r2.eventPath).toBeUndefined();
+  });
+  it('encodes a QR matrix', () => {
+    const m = qrMatrix(displayUrlFor('somchai-nida-261031'));
+    expect(m.size).toBeGreaterThanOrEqual(21);
+    expect(m.isDark(0, 0)).toBe(true); // finder pattern corner
   });
 });

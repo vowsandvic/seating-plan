@@ -8,7 +8,7 @@ import { createInitialState, nextObjectId, snapshotOf, type Mode, type PlanState
 const UNDO_CAP = 50;
 
 export type PlanAction =
-  | { type: 'HYDRATE'; floorplan: FloorplanObject[]; guests: Guest[]; logo: string | null; theme: string | null; customColors: CustomThemeColors; idCounter: number }
+  | { type: 'HYDRATE'; floorplan: FloorplanObject[]; guests: Guest[]; logo: string | null; eventPath: string; theme: string | null; customColors: CustomThemeColors; idCounter: number }
   | { type: 'ADD_OBJECT'; object: FloorplanObject }
   | { type: 'DELETE_OBJECTS'; ids: string[] }
   | { type: 'MOVE_OBJECTS'; changes: Array<{ id: string; x: number; y: number }> }
@@ -22,7 +22,8 @@ export type PlanAction =
   | { type: 'ADD_GUEST' }
   | { type: 'UPDATE_GUEST'; index: number; fields: Partial<Guest> }
   | { type: 'DELETE_GUEST'; index: number }
-  | { type: 'IMPORT_DATA'; floorplan?: FloorplanObject[]; guests?: Guest[]; logo?: string | null }
+  | { type: 'IMPORT_DATA'; floorplan?: FloorplanObject[]; guests?: Guest[]; logo?: string | null; eventPath?: string }
+  | { type: 'SET_EVENT_PATH'; eventPath: string }
   | { type: 'SET_MODE'; mode: Mode }
   | { type: 'SET_THEME'; theme: string | null }
   | { type: 'SET_LOGO'; logo: string | null }
@@ -48,6 +49,7 @@ export function planReducer(state: PlanState, action: PlanAction): PlanState {
         floorplan: action.floorplan,
         guests: action.guests,
         logo: action.logo,
+        eventPath: action.eventPath,
         theme: action.theme,
         customColors: action.customColors,
         idCounter: action.idCounter,
@@ -158,6 +160,7 @@ export function planReducer(state: PlanState, action: PlanAction): PlanState {
         floorplan,
         guests: action.guests ?? state.guests,
         logo: action.logo === undefined ? state.logo : action.logo,
+        eventPath: action.eventPath ?? state.eventPath,
         idCounter: action.floorplan ? nextIdCounter(floorplan) : state.idCounter,
         selectedIds: [],
       };
@@ -168,6 +171,9 @@ export function planReducer(state: PlanState, action: PlanAction): PlanState {
 
     case 'SET_THEME':
       return { ...state, theme: action.theme };
+
+    case 'SET_EVENT_PATH':
+      return { ...state, eventPath: action.eventPath };
 
     case 'SET_LOGO':
       return { ...state, ...withUndo(state), logo: action.logo };

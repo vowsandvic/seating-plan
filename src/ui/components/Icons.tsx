@@ -102,3 +102,13 @@ export function TableStatusIcon({ status, size }: { status: 'nocap' | 'empty' | 
   if (status === 'full' || status === 'nocap') return <StatusFullIcon size={size ?? 11} />;
   return <StatusEmptyIcon size={size ?? 11} />;
 }
+export function QrIcon(p: IconProps) {
+  return (
+    <Base {...p}>
+      <rect x={3} y={3} width={7} height={7} rx={1} />
+      <rect x={14} y={3} width={7} height={7} rx={1} />
+      <rect x={3} y={14} width={7} height={7} rx={1} />
+      <path d="M14 14h3v3h-3zM20 14v.01M14 20h.01M17 20h4v-3" />
+    </Base>
+  );
+}
