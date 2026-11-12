@@ -2,9 +2,10 @@ import { createContext, useContext, useEffect, useReducer, type Dispatch, type R
 import { planReducer, type PlanAction } from '../../state/planReducer';
 import { createInitialState, type PlanState } from '../../state/planState';
 import { nextIdCounter } from '../../domain/jsonSchema';
+import { finalizeEventPath } from '../../domain/eventPath';
 import {
   loadFloorplan, saveFloorplan, loadGuests, saveGuests, loadLogo, saveLogo,
-  loadTheme, saveTheme, loadCustomColors, saveCustomColors, clearAllPlanStorage,
+  loadTheme, saveTheme, loadCustomColors, saveCustomColors, loadEventPath, saveEventPath, clearAllPlanStorage,
 } from '../../infrastructure/storage';
 import { loadLang, saveLang } from '../../domain/i18n';
 import { computePlanThemeTokens, getTheme, PLAN_THEME_VARS } from '../../domain/theme';
@@ -59,6 +60,11 @@ export function PlanEffects() {
 
   useEffect(() => {
     if (!state.hydrated) return;
+    saveEventPath(state.eventPath);
+  }, [state.eventPath, state.hydrated]);
+
+  useEffect(() => {
+    if (!state.hydrated) return;
     saveTheme(state.theme);
   }, [state.theme, state.hydrated]);
 
@@ -98,9 +104,10 @@ export function PlanProvider({ children }: { children: ReactNode }) {
     const floorplan = loadFloorplan();
     const guests = loadGuests();
     const logo = loadLogo();
+    const eventPath = finalizeEventPath(loadEventPath());
     const theme = loadTheme();
     const customColors = loadCustomColors(state.customColors);
-    dispatch({ type: 'HYDRATE', floorplan, guests, logo, theme, customColors, idCounter: nextIdCounter(floorplan) });
+    dispatch({ type: 'HYDRATE', floorplan, guests, logo, eventPath, theme, customColors, idCounter: nextIdCounter(floorplan) });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

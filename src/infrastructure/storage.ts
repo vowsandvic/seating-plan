@@ -8,6 +8,7 @@ const GUESTS_KEY = 'guests-v1';
 const LOGO_KEY = 'seating-plan-logo';
 const THEME_KEY = 'seating-plan-theme';
 const CUSTOM_THEME_KEY = 'seating-plan-custom-theme';
+const EVENT_PATH_KEY = 'seating-plan-event-path';
 
 export function loadFloorplan(): FloorplanObject[] {
   try {
@@ -110,6 +111,24 @@ export function clearAllPlanStorage(): void {
     localStorage.removeItem(LOGO_KEY);
     localStorage.removeItem(THEME_KEY);
     localStorage.removeItem(CUSTOM_THEME_KEY);
+    localStorage.removeItem(EVENT_PATH_KEY);
+  } catch {
+    /* ignore */
+  }
+}
+
+export function loadEventPath(): string {
+  try {
+    return localStorage.getItem(EVENT_PATH_KEY) || '';
+  } catch {
+    return '';
+  }
+}
+
+export function saveEventPath(path: string): void {
+  try {
+    if (path) localStorage.setItem(EVENT_PATH_KEY, path);
+    else localStorage.removeItem(EVENT_PATH_KEY);
   } catch {
     /* ignore */
   }

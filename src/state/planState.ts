@@ -10,6 +10,8 @@ export interface PlanState {
   floorplan: FloorplanObject[];
   guests: Guest[];
   logo: string | null;
+  /** URL segment seating-display is published under ('' = site root). Exported as `path`. */
+  eventPath: string;
   selectedIds: string[];
   mode: Mode;
   idCounter: number;
@@ -29,6 +31,7 @@ export function createInitialState(lang: Lang): PlanState {
     floorplan: [],
     guests: [],
     logo: null,
+    eventPath: '',
     selectedIds: [],
     mode: 'edit',
     idCounter: 1,

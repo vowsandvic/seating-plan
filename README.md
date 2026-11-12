@@ -9,6 +9,15 @@ React + TypeScript + Vite, organized as:
 - `src/infrastructure/` — localStorage persistence.
 - `src/ui/` — React components, organized by feature (`edit/`, `guests/`, `view/`, `topbar/`).
 
+## Event link & QR code
+
+**Link & QR** in the top bar sets the event path, for example `somchai-nida-261031`. The path:
+
+- can only use lowercase a–z, 0–9 and inner hyphens, up to 64 characters
+- is saved in the browser and written to the exported `data.json` as `"path"`
+
+seating-display's deploy workflow reads this field and publishes the seat finder at `https://vowsandvic.github.io/seating-display/<path>/`. The same dialog shows that URL as a QR code you can download as a PNG. The QR works once the export has been deployed. The path rules live in `src/domain/eventPath.ts` and must match the check in seating-display's `deploy.yml`.
+
 ## Development
 
 ```bash
